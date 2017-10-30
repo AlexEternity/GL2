@@ -92,105 +92,72 @@ void MainWindow::on_button_clicked()
     }
     image->load(oFile,NULL);
     image1->load(oFile,NULL);
+    for(int i =0;i<image1->height();i++)
+        for(int j =0;j<image1->width();j++)
+            image1->setPixelColor(i,j,QRgb(Qt::white));
 }
 
 void MainWindow::on_transform_clicked()
 {
     fWidget->scene->update();
     sWidget->A->update();
-    int n = 9;
-    int m = 10;
+    int n = 6;
+    int m = 7;
     double **matr = new double *[n];
-    for(int i = 0;i < 9; i++)
+    for(int i = 0;i < 7; i++)
     {
         matr[i] = new double [m];
-        if(i == 0 || i == 3 || i == 6)
+        if(i == 0 || i == 1 || i == 2)
         {
             if(i == 0)
             {
                 matr[i][0] = fWidget->A->GetX();
                 matr[i][1] = fWidget->A->GetY();
-                matr[i][9] = sWidget->A->GetX();
+                matr[i][6] = sWidget->A->GetX();
             }
-            else if(i == 3)
+            else if(i == 1)
             {
                 matr[i][0] = fWidget->B->GetX();
                 matr[i][1] = fWidget->B->GetY();
-                matr[i][9] = sWidget->B->GetX();
+                matr[i][6] = sWidget->B->GetX();
 
             }
-            else if(i == 6)
+            else if(i == 2)
             {
                 matr[i][0] = fWidget->C->GetX();
                 matr[i][1] = fWidget->C->GetY();
-                matr[i][9] = sWidget->C->GetX();
+                matr[i][6] = sWidget->C->GetX();
             }
             matr[i][2] = 1;
-            for(int j = 3;j < 9;j++)
+            for(int j = 3;j < 7;j++)
                 matr[i][j] = 0;
         }
-        else if(i == 1 || i == 4 || i == 7)
+        else if(i == 3 || i == 4 || i == 5)
         {
-            if(i == 1)
+            if(i == 3)
             {
                 matr[i][3] = fWidget->A->GetX();
                 matr[i][4] = fWidget->A->GetY();
-                matr[i][9] = sWidget->A->GetY();
+                matr[i][6] = sWidget->A->GetY();
             }
             else if(i == 4)
             {
                 matr[i][3] = fWidget->B->GetX();
                 matr[i][4] = fWidget->B->GetY();
-                matr[i][9] = sWidget->B->GetY();
+                matr[i][6] = sWidget->B->GetY();
 
             }
-            else if(i == 7)
+            else if(i == 5)
             {
                 matr[i][3] = fWidget->C->GetX();
                 matr[i][4] = fWidget->C->GetY();
-                matr[i][9] = sWidget->C->GetY();
+                matr[i][6] = sWidget->C->GetY();
             }
             matr[i][5] = 1;
             for(int j = 0;j < 3;j++)
                 matr[i][j] = 0;
-            for(int j = 6;j < 9;j++)
-                matr[i][j] = 0;
-        }
-        else if(i == 2 || i == 5 || i == 8)
-        {
-            if(i == 2)
-            {
-                matr[i][6] = fWidget->A->GetX();
-                matr[i][7] = fWidget->A->GetY();
-                matr[i][9] = 1;
-            }
-            else if(i == 5)
-            {
-                matr[i][6] = fWidget->B->GetX();
-                matr[i][7] = fWidget->B->GetY();
-                matr[i][9] = 1;
-
-            }
-            else if(i == 8)
-            {
-                matr[i][6] = fWidget->C->GetX();
-                matr[i][7] = fWidget->C->GetY();
-                matr[i][9] = 1;
-            }
-            matr[i][8] = 1;
-            for(int j = 0;j < 6;j++)
-                matr[i][j] = 0;
         }
     }
-    double *temp = matr[1];
-    matr[1] = matr[3];
-    matr[3] = temp;
-    temp = matr[2];
-    matr[2] = matr[6];
-    matr[6] = temp;
-    temp = matr[5];
-    matr[5] = matr[7];
-    matr[7] = temp;
     double  tmp, *xx = new double[10];
     for(int i = 0;i<10;i++)
         xx[i]=0;
@@ -214,7 +181,16 @@ void MainWindow::on_transform_clicked()
                    xx[i] = matr[i][n];
                    for (j=i+1;j<n;j++) xx[i]-=matr[i][j]*xx[j];
                }
-
+        xx[6]=0;xx[7]=0;xx[8]=1;
+            for(int i=0;i<6;i++)
+            {
+                cout<<endl;
+                for(int j=0;j<7;j++)
+                    cout<<matr[i][j]<< " ";
+            }
+            cout<<endl;
+            for(int i=0;i<9;i++)
+                cout<<xx[i]<<" ";
          double sumr = 0,sumb = 0,sumg = 0;
          for(int i = 0;i < image->heightMM();i++)
          {
@@ -226,28 +202,29 @@ void MainWindow::on_transform_clicked()
                  {
                     if(j == 0)
                     {
+
                         sumr = (QColor(image->pixel(i,j)).red())*xx[4] + (QColor(image->pixel(i + 1,j)).red())*xx[7] +
                      (QColor(image->pixel(i,j + 1)).red())*xx[5] + (QColor(image->pixel(i + 1,j + 1)).red())*xx[8];
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i + 1,j)).blue()*xx[7] +
                       QColor(image->pixel(i,j + 1)).blue()*xx[5] + QColor(image->pixel(i + 1,j + 1)).blue()*xx[8];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i + 1,j)).green()*xx[7] +
                       QColor(image->pixel(i,j + 1)).green()*xx[5] + QColor(image->pixel(i + 1,j + 1)).green()*xx[8];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                     else if( j == image->width()-1)
                     {
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i + 1,j)).red()*xx[7] +
                       QColor(image->pixel(i,j - 1)).red()*xx[3] + QColor(image->pixel(i + 1,j -1)).red()*xx[6];
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i + 1,j)).blue()*xx[7] +
                       QColor(image->pixel(i,j - 1)).blue()*xx[3] + QColor(image->pixel(i + 1,j - 1)).blue()*xx[6];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i + 1,j)).green()*xx[7] +
                       QColor(image->pixel(i,j - 1)).green()*xx[3] + QColor(image->pixel(i + 1,j - 1)).green()*xx[6];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                     else
@@ -255,15 +232,15 @@ void MainWindow::on_transform_clicked()
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i + 1,j)).red()*xx[7] +
                       QColor(image->pixel(i,j - 1)).red()*xx[3] + QColor(image->pixel(i + 1,j -1)).red()*xx[6] +
                       QColor(image->pixel(i,j + 1)).red()*xx[5] + QColor(image->pixel(i + 1,j + 1)).red()*xx[8];
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i + 1,j)).blue()*xx[7] +
                       QColor(image->pixel(i,j - 1)).blue()*xx[3] + QColor(image->pixel(i + 1,j - 1)).blue()*xx[6] +
                       QColor(image->pixel(i,j + 1)).blue()*xx[5] + QColor(image->pixel(i + 1,j + 1)).blue()*xx[8];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i + 1,j)).green()*xx[7] +
                       QColor(image->pixel(i,j - 1)).green()*xx[3] + QColor(image->pixel(i + 1,j - 1)).green()*xx[6] +
                       QColor(image->pixel(i,j + 1)).green()*xx[5] + QColor(image->pixel(i + 1,j + 1)).green()*xx[8];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                  }
@@ -273,13 +250,13 @@ void MainWindow::on_transform_clicked()
                     {
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i - 1,j)).red()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).red()*xx[2] + QColor(image->pixel(i,j + 1)).red()*xx[5];
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i - 1,j)).blue()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).blue()*xx[2] + QColor(image->pixel(i,j + 1)).blue()*xx[5];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i - 1,j)).green()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).green()*xx[2] + QColor(image->pixel(i,j + 1)).green()*xx[5];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                     else
@@ -287,15 +264,15 @@ void MainWindow::on_transform_clicked()
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i + 1,j)).red()*xx[7] +
                       QColor(image->pixel(i - 1,j)).red()*xx[1] + QColor(image->pixel(i + 1,j + 1)).red()*xx[8] +
                       QColor(image->pixel(i - 1,j + 1)).red()*xx[2] + QColor(image->pixel(i,j + 1)).red()*xx[5];                              ;
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i + 1,j)).blue()*xx[7] +
                       QColor(image->pixel(i - 1,j)).blue()*xx[1] + QColor(image->pixel(i + 1,j + 1)).blue()*xx[8] +
                       QColor(image->pixel(i - 1,j + 1)).blue()*xx[2] + QColor(image->pixel(i,j + 1)).blue()*xx[5];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i + 1,j)).green()*xx[7] +
                       QColor(image->pixel(i - 1,j)).green()*xx[1] + QColor(image->pixel(i + 1,j + 1)).green()*xx[8] +
                       QColor(image->pixel(i - 1,j + 1)).green()*xx[2] + QColor(image->pixel(i,j + 1)).green()*xx[5];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                  }
@@ -306,13 +283,13 @@ void MainWindow::on_transform_clicked()
 
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i - 1,j)).red()*xx[1] +
                       QColor(image->pixel(i - 1,j - 1)).red()*xx[0] + QColor(image->pixel(i,j - 1)).red()*xx[3];                              ;
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i - 1,j)).blue()*xx[1] +
                       QColor(image->pixel(i - 1,j - 1)).blue()*xx[0] + QColor(image->pixel(i,j - 1)).blue()*xx[3];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i - 1,j)).green()*xx[1] +
                       QColor(image->pixel(i - 1,j - 1)).green()*xx[0] + QColor(image->pixel(i,j - 1)).green()*xx[3];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                     else
@@ -320,15 +297,15 @@ void MainWindow::on_transform_clicked()
                         sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i,j - 1)).red()*xx[3] +
                       QColor(image->pixel(i - 1,j - 1)).red()*xx[0] + QColor(image->pixel(i - 1,j)).red()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).red()*xx[2] + QColor(image->pixel(i,j + 1)).red()*xx[5];                              ;
-                        sumr /= 32;
+                        sumr /= 9;
                         sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i,j - 1)).blue()*xx[3] +
                       QColor(image->pixel(i - 1,j - 1)).blue()*xx[0] + QColor(image->pixel(i - 1,j)).blue()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).blue()*xx[2] + QColor(image->pixel(i,j + 1)).blue()*xx[5];
-                        sumb /= 32;
+                        sumb /= 9;
                         sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i,j - 1)).green()*xx[3] +
                       QColor(image->pixel(i - 1,j - 1)).green()*xx[0] + QColor(image->pixel(i -1,j)).green()*xx[1] +
                       QColor(image->pixel(i - 1,j + 1)).green()*xx[2] + QColor(image->pixel(i,j + 1)).green()*xx[5];
-                        sumg /= 32;
+                        sumg /= 9;
                         image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                     }
                  }
@@ -337,15 +314,15 @@ void MainWindow::on_transform_clicked()
                      sumr = QColor(image->pixel(i,j)).red()*xx[4] + QColor(image->pixel(i - 1,j)).red()*xx[1] +
                      QColor(image->pixel(i - 1,j - 1)).red()*xx[0] + QColor(image->pixel(i,j - 1)).red()*xx[3] +
                      QColor(image->pixel(i + 1,j - 1)).red()*xx[6] + QColor(image->pixel(i + 1,j)).red()*xx[7];                              ;
-                     sumr /= 32;
+                     sumr /= 9;
                      sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i + 1,j - 1)).blue()*xx[1] +
                      QColor(image->pixel(i - 1,j - 1)).blue()*xx[0] + QColor(image->pixel(i - 1,j)).blue()*xx[3] +
                      QColor(image->pixel(i,j - 1)).blue()*xx[6] + QColor(image->pixel(i,j + 1)).blue()*xx[7];
-                     sumb /= 32;
+                     sumb /= 9;
                      sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i + 1,j - 1)).green()*xx[1] +
                      QColor(image->pixel(i - 1,j - 1)).green()*xx[0] + QColor(image->pixel(i -1,j)).green()*xx[3] +
                      QColor(image->pixel(i,j - 1)).green()*xx[6] + QColor(image->pixel(i,j + 1)).green()*xx[7];
-                     sumg /= 32;
+                     sumg /= 9;
                      image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                  }
                  else
@@ -355,19 +332,19 @@ void MainWindow::on_transform_clicked()
                              QColor(image->pixel(i,j + 1)).red()*xx[5] + QColor(image->pixel(i + 1,j + 1)).red()*xx[8] +
                              QColor(image->pixel(i + 1,j)).red()*xx[7] + QColor(image->pixel(i + 1,j - 1)).red()*xx[6] +
                              QColor(image->pixel(i,j - 1)).red()*xx[3];
-                     sumr /= 32;
+                     sumr /= 9;
                      sumb = QColor(image->pixel(i,j)).blue()*xx[4] + QColor(image->pixel(i - 1,j - 1)).blue()*xx[0] +
                              QColor(image->pixel(i - 1,j)).blue()*xx[1] + QColor(image->pixel(i - 1,j + 1)).blue()*xx[2] +
                              QColor(image->pixel(i,j + 1)).blue()*xx[5] + QColor(image->pixel(i + 1,j + 1)).blue()*xx[8] +
                              QColor(image->pixel(i + 1,j)).blue()*xx[7] + QColor(image->pixel(i + 1,j - 1)).blue()*xx[6] +
                              QColor(image->pixel(i,j - 1)).blue()*xx[3];
-                     sumb /= 32;
+                     sumb /= 9;
                      sumg = QColor(image->pixel(i,j)).green()*xx[4] + QColor(image->pixel(i - 1,j - 1)).green()*xx[0] +
                              QColor(image->pixel(i - 1,j)).green()*xx[1] + QColor(image->pixel(i - 1,j + 1)).green()*xx[2] +
                              QColor(image->pixel(i,j + 1)).green()*xx[5] + QColor(image->pixel(i + 1,j + 1)).green()*xx[8] +
                              QColor(image->pixel(i + 1,j)).green()*xx[7] + QColor(image->pixel(i + 1,j - 1)).green()*xx[6] +
                              QColor(image->pixel(i,j - 1)).green()*xx[3];
-                     sumg /= 32;
+                     sumg /= 9;
                      image1->setPixelColor(i,j,QColor(sumr,sumb,sumg));
                  }
              }
@@ -380,8 +357,8 @@ void MainWindow::paintEvent(QPaintEvent *)
     if(oFile != NULL)
     {
         QPixmap map = QPixmap::fromImage(*image);
-        map = map.scaled(fWidget->width(),fWidget->height());
-        *image = map.toImage();
+       // map = map.scaled(fWidget->width(),fWidget->height());
+        //*image = map.toImage();
         *image1 = map.toImage();
         fWidget->scene->addPixmap(map);
     }
