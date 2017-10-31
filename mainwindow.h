@@ -2,14 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QFile>
 #include <QToolBar>
 #include <QFileDialog>
 #include <QPixmap>
 #include <QPainter>
 #include <QImage>
 #include <QGraphicsView>
-#include <QGraphicsScene>
 #include <QPixmap>
 #include <graphicsview.h>
 

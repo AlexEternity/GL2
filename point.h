@@ -19,7 +19,6 @@ public:
     double GetY();
     bool move;
 signals:
-    void signal2(Point *p,bool move,bool dbl);
 
 public slots:
 
