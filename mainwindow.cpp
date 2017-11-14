@@ -87,8 +87,8 @@ void MainWindow::on_button_clicked()
     }
     image->load(oFile,NULL);
     //костыль
-   //oFile = QFileDialog::getOpenFileName(0, "Open Dialog", "", "*.bmp *.jpg *.png");
-   //im//age1->load(oFile,NULL);
+  //oFile = QFileDialog::getOpenFileName(0, "Open Dialog", "", "*.bmp *.jpg *.png");
+   //image1->load(oFile,NULL);
 
 }
 
@@ -96,118 +96,102 @@ void MainWindow::on_transform_clicked()
 {
     fWidget->scene->update();
     sWidget->A->update();
-    int n = 6;
-    int m = 7;
-    double **matr = new double *[n];
-    //система
-    for(int i = 0;i < 7; i++)
-    {
-        matr[i] = new double [m];
-        if(i == 0 || i == 1 || i == 2)
-        {
-            if(i == 0)
-            {
-                matr[i][0] = fWidget->A->GetX();
-                matr[i][1] = fWidget->A->GetY();
-                matr[i][6] = sWidget->A->GetX();
-            }
-            else if(i == 1)
-            {
-                matr[i][0] = fWidget->B->GetX();
-                matr[i][1] = fWidget->B->GetY();
-                matr[i][6] = sWidget->B->GetX();
+    //исходные матрицы
+    double **matr = new double*[3];
+    double *b1 = new double[3];
+    double *b2 = new double[3];
+    for(int i = 0;i< 3;i++)
+        matr[i] = new double[3];
+    b1[0] = fWidget->A->GetX();
+    b1[1] = fWidget->B->GetX();
+    b1[2] = fWidget->C->GetX();
+    b2[0] = fWidget->A->GetY();
+    b2[1] = fWidget->B->GetY();
+    b2[2] = fWidget->C->GetY();
+    matr[0][0] = sWidget->A->GetX();
+    matr[0][1] = sWidget->A->GetY();
+    matr[0][2] = 1;
+    matr[1][0] = sWidget->B->GetX();
+    matr[1][1] = sWidget->B->GetY();
+    matr[1][2] = 1;
+    matr[2][0] = sWidget->C->GetX();
+    matr[2][1] = sWidget->C->GetY();
+    matr[2][2] = 1;
 
-            }
-            else if(i == 2)
-            {
-                matr[i][0] = fWidget->C->GetX();
-                matr[i][1] = fWidget->C->GetY();
-                matr[i][6] = sWidget->C->GetX();
-            }
-            matr[i][2] = 1;
-            for(int j = 3;j < 6;j++)
-                matr[i][j] = 0;
-        }
-        else if(i == 3 || i == 4 || i == 5)
-        {
-            if(i == 3)
-            {
-                matr[i][3] = fWidget->A->GetX();
-                matr[i][4] = fWidget->A->GetY();
-                matr[i][6] = sWidget->A->GetY();
-            }
-            else if(i == 4)
-            {
-                matr[i][3] = fWidget->B->GetX();
-                matr[i][4] = fWidget->B->GetY();
-                matr[i][6] = sWidget->B->GetY();
+        //krummer
+        double det1,det11,det12,det13;
+        double det2,det21,det22,det23;
+        det1 = matr[0][0]*matr[1][1]*matr[2][2]+matr[0][1]*matr[1][2]*matr[2][0]+matr[0][2]*matr[1][0]*matr[2][1]
+             -(matr[0][2]*matr[1][1]*matr[2][0]+matr[0][1]*matr[1][0]*matr[2][2]+matr[0][0]*matr[1][2]*matr[2][1]);
 
-            }
-            else if(i == 5)
-            {
-                matr[i][3] = fWidget->C->GetX();
-                matr[i][4] = fWidget->C->GetY();
-                matr[i][6] = sWidget->C->GetY();
-            }
-            matr[i][5] = 1;
-            for(int j = 0;j < 3;j++)
-                matr[i][j] = 0;
-        }
-    }
-    //krummer
-    double det,det1,det2,det3,det4,det5,det6;
-    det = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
-    det1 = matr[0][6] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
-    det2 = matr[0][0] + matr[1][6] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
-    det3 = matr[0][0] + matr[1][1] + matr[2][6] + matr[3][3] + matr[4][4] + matr[5][5];
-    det4 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][6] + matr[4][4] + matr[5][5];
-    det5 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][6] + matr[5][5];
-    det6 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][6];
+        det11 = b1[0]*matr[1][1]*matr[2][2]+matr[0][1]*matr[1][2]*b1[2]+matr[0][2]*b1[1]*matr[2][1]
+              -(matr[0][2]*matr[1][1]*b1[2]+matr[0][1]*b1[1]*matr[2][2]+b1[0]* matr[1][2]*matr[2][1]);
+
+        det12 = matr[0][0]*b1[1]*matr[2][2]+b1[0]*matr[1][2]*matr[2][0]+matr[0][2]*matr[1][0]*b1[2]
+              -(matr[0][2]*b1[1]*matr[2][0]+b1[0]*matr[1][0]*matr[2][2]+matr[0][0]*matr[1][2]*b1[2]);
+
+        det13 = matr[0][0]*matr[1][1]*b1[2]+matr[0][1]*b1[1]*matr[2][0]+b1[0]*matr[1][0]*matr[2][1]
+              -(b1[0]*matr[1][1]*matr[2][0]+matr[0][1]*matr[1][0]*b1[2]+matr[0][0]*b1[1]*matr[2][1]);
+
+        det2 = matr[0][0]*matr[1][1]*matr[2][2]+matr[0][1]*matr[1][2]*matr[2][0]+matr[0][2]*matr[1][0]*matr[2][1]
+             -(matr[0][2]*matr[1][1]*matr[2][0]+matr[0][1]*matr[1][0]*matr[2][2]+matr[0][0]*matr[1][2]*matr[2][1]);
+
+        det21 = b2[0]*matr[1][1]*matr[2][2]+matr[0][1]*matr[1][2]*b2[2]+matr[0][2]*b2[1]*matr[2][1]
+              -(matr[0][2]*matr[1][1]*b2[2]+matr[0][1]*b2[1]*matr[2][2]+b2[0]* matr[1][2]*matr[2][1]);
+
+        det22 = matr[0][0]*b2[1]*matr[2][2]+b2[0]*matr[1][2]*matr[2][0]+matr[0][2]*matr[1][0]*b2[2]
+              -(matr[0][2]*b2[1]*matr[2][0]+b2[0]*matr[1][0]*matr[2][2]+matr[0][0]*matr[1][2]*b2[2]);
+
+        det23 = matr[0][0]*matr[1][1]*b2[2]+matr[0][1]*b2[1]*matr[2][0]+b2[0]*matr[1][0]*matr[2][1]
+              -(b2[0]*matr[1][1]*matr[2][0]+matr[0][1]*matr[1][0]*b2[2]+matr[0][0]*b2[1]*matr[2][1]);
+
     double **xx = new double *[3];
-    //система
+    //матрица преобразования
     for(int i = 0;i < 3; i++)
     {
         xx[i] = new double [3];
     }
-    xx[0][0] = det1/det; xx[0][1] = det2/det; xx[0][2] = det3/det;
-    xx[1][0] = det4/det; xx[1][1] = det5/det; xx[1][2] = det6/det;
+    xx[0][0] = det11/det1; xx[0][1] = det12/det1; xx[0][2] = det13/det1;
+    xx[1][0] = det21/det2; xx[1][1] = det22/det2; xx[1][2] = det23/det2;
     xx[2][0] = 0; xx[2][1] = 0; xx[2][2] = 1;
-    for(int i =0;i<3;i++)
-        for(int j=0;j<3;j++)
-            qDebug() << xx[i][j];
-    QImage a(sWidget->width(),sWidget->height(),QImage::Format_RGB32);
-        //трансформация
-        for(int j = 0;j < a.width();j++)
-        {
-            for(int i = 0;i < a.height();i++)
-            {
-                double x,y;
-                x = xx[0][0]*i+xx[0][1]*j+xx[0][2]*1;
-                y = xx[1][0]*i+xx[1][1]*j+xx[1][2]*1;
-                if( x >= 0 && y >= 0 && x <= fWidget->width() && y <= fWidget->height())
-                {
-                    int xup,xd,yup,yd;
-                    xup = ceil(x);
-                    xd = floor(x);
-                    yup = ceil(y);
-                    yd = floor(y);
-                    if(xd > 0 && yd > 0 && xup < image->width() && yup < image->height())
-                    {
-                        double red,blue,green;
-                        red = (QColor(image->pixel(xd,yd)).red() * (xup - x) + QColor(image->pixel(xup,yd)).red() * (x - xd)) *(yup - y) +
-                              (QColor(image->pixel(xd,yup)).red() * (xup - x) + QColor(image->pixel(xup,yup)).red() * (x - xd)) *(y - yd);
-                        blue = (QColor(image->pixel(xd,yd)).blue() * (xup - x) + QColor(image->pixel(xup,yd)).blue() * (x - xd)) *(yup - y) +
-                                (QColor(image->pixel(xd,yup)).blue() * (xup - x) + QColor(image->pixel(xup,yup)).blue() * (x - xd)) *(y - yd);
-                        green = (QColor(image->pixel(xd,yd)).green() * (xup - x) + QColor(image->pixel(xup,yd)).green() * (x - xd)) *(yup - y) +
-                                (QColor(image->pixel(xd,yup)).green() * (xup - x) + QColor(image->pixel(xup,yup)).green() * (x - xd)) *(y - yd);
-                       a.setPixelColor(i,j,QColor(red,blue,green));
-                    }
-                }
-             }
-            }
+            //трансформация
+    for(int i = 0;i < sWidget->height();i++)
+    {
+        for(int j = 0;j < sWidget->width();j++)
+           {
+               double x,y;
+               x = xx[0][0]*j+xx[0][1]*i+xx[0][2]*1;
+               y = xx[1][0]*j+xx[1][1]*i+xx[1][2]*1;
+               if( x >= 0 && y >= 0 && x < image->width() && y <image->height())
+               {
+                   int xup,xd,yup,yd;
+                   xup = ceil(x);
+                   xd = floor(x);
+                   yup = ceil(y);
+                   yd = floor(y);
+                   if(xd >0&&yd > 0&&xup < image->width()&&yup < image->height())
+                        {
+                            double red,blue,green;
+                        red = (QColor(image->pixelColor(xd,yd)).red() * (xup - x) + QColor(image->pixelColor(xup,yd)).red() * (x - xd)) *(yup - y) +
+     (QColor(image->pixelColor(xd,yup)).red() * (xup - x) +
+      QColor(image->pixelColor(xup,yup)).red() * (x - xd)) *(y - yd);
 
-        QPixmap map = QPixmap::fromImage(a);
-        sWidget->scene->addPixmap(map);
+                      blue = (QColor(image->pixelColor(xd,yd)).blue() * (xup - x) + QColor(image->pixelColor(xup,yd)).blue() * (x - xd)) *(yup - y) +
+     (QColor(image->pixelColor(xd,yup)).blue() * (xup - x) +
+      QColor(image->pixelColor(xup,yup)).blue() * (x - xd)) *(y - yd);
+
+                    green = (QColor(image->pixelColor(xd,yd)).green() * (xup - x) + QColor(image->pixelColor(xup,yd)).green() * (x - xd)) *(yup - y) +
+     (QColor(image->pixelColor(xd,yup)).green() * (xup - x) +
+      QColor(image->pixelColor(xup,yup)).green() * (x - xd)) *(y - yd);
+
+                            QPen a;
+                            a.setColor(QColor(red,green,blue));
+                            sWidget->scene->addEllipse(j,i,1,1,a);
+                        }
+                    }
+                 }
+                }
+
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
