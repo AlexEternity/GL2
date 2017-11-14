@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <QDebug>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -87,8 +87,8 @@ void MainWindow::on_button_clicked()
     }
     image->load(oFile,NULL);
     //костыль
-   oFile = QFileDialog::getOpenFileName(0, "Open Dialog", "", "*.bmp *.jpg *.png");
-   image1->load(oFile,NULL);
+   //oFile = QFileDialog::getOpenFileName(0, "Open Dialog", "", "*.bmp *.jpg *.png");
+   //im//age1->load(oFile,NULL);
 
 }
 
@@ -154,50 +154,59 @@ void MainWindow::on_transform_clicked()
                 matr[i][j] = 0;
         }
     }
-    //гаусс
-    double  tmp, *xx = new double[10];
-    for(int i = 0;i<10;i++)
-        xx[i]=0;
-        int k,i,j;
-        for ( i=0; i<n; i++)
-             {
-               tmp=matr[i][i];
-                 for (j=n;j>=i;j--)
-                     matr[i][j]/=tmp;
-                   for (j=i+1;j<n;j++)
-                  {
-                     tmp=matr[j][i];
-                       for (k=n;k>=i;k--)
-                     matr[j][k]-=tmp*matr[i][k];
-                  }
-              }
-          /*обратный ход*/
-            xx[n-1] = matr[n-1][n];
-             for (i=n-2; i>=0; i--)
-               {
-                   xx[i] = matr[i][n];
-                   for (j=i+1;j<n;j++) xx[i]-=matr[i][j]*xx[j];
-               }
-        xx[6]=0;xx[7]=0;xx[8]=1;
-        int x,y;
+    //krummer
+    double det,det1,det2,det3,det4,det5,det6;
+    det = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
+    det1 = matr[0][6] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
+    det2 = matr[0][0] + matr[1][6] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][5];
+    det3 = matr[0][0] + matr[1][1] + matr[2][6] + matr[3][3] + matr[4][4] + matr[5][5];
+    det4 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][6] + matr[4][4] + matr[5][5];
+    det5 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][6] + matr[5][5];
+    det6 = matr[0][0] + matr[1][1] + matr[2][2] + matr[3][3] + matr[4][4] + matr[5][6];
+    double **xx = new double *[3];
+    //система
+    for(int i = 0;i < 3; i++)
+    {
+        xx[i] = new double [3];
+    }
+    xx[0][0] = det1/det; xx[0][1] = det2/det; xx[0][2] = det3/det;
+    xx[1][0] = det4/det; xx[1][1] = det5/det; xx[1][2] = det6/det;
+    xx[2][0] = 0; xx[2][1] = 0; xx[2][2] = 1;
+    for(int i =0;i<3;i++)
+        for(int j=0;j<3;j++)
+            qDebug() << xx[i][j];
+    QImage a(sWidget->width(),sWidget->height(),QImage::Format_RGB32);
         //трансформация
-        for(int i =0;i<image->height();i++)
+        for(int j = 0;j < a.width();j++)
         {
-            for(int j = 0;j<image->width();j++)
+            for(int i = 0;i < a.height();i++)
             {
-                x = xx[0]*i+xx[1]*j+xx[2]*1+1;
-                y = xx[3]*i+xx[4]*j+xx[5]*1+1;
-                x = floor(x);
-                y = floor(y);
-                if(x <0)
-                    x*=-1;
-                if(y<0)
-                    y*=-1;
-               image1->setPixelColor(x,y,QColor(image->pixel(i,j)));
-              // image1->setPixel(x,y,uint(QRgb(image->pixel(i,j))));
+                double x,y;
+                x = xx[0][0]*i+xx[0][1]*j+xx[0][2]*1;
+                y = xx[1][0]*i+xx[1][1]*j+xx[1][2]*1;
+                if( x >= 0 && y >= 0 && x <= fWidget->width() && y <= fWidget->height())
+                {
+                    int xup,xd,yup,yd;
+                    xup = ceil(x);
+                    xd = floor(x);
+                    yup = ceil(y);
+                    yd = floor(y);
+                    if(xd > 0 && yd > 0 && xup < image->width() && yup < image->height())
+                    {
+                        double red,blue,green;
+                        red = (QColor(image->pixel(xd,yd)).red() * (xup - x) + QColor(image->pixel(xup,yd)).red() * (x - xd)) *(yup - y) +
+                              (QColor(image->pixel(xd,yup)).red() * (xup - x) + QColor(image->pixel(xup,yup)).red() * (x - xd)) *(y - yd);
+                        blue = (QColor(image->pixel(xd,yd)).blue() * (xup - x) + QColor(image->pixel(xup,yd)).blue() * (x - xd)) *(yup - y) +
+                                (QColor(image->pixel(xd,yup)).blue() * (xup - x) + QColor(image->pixel(xup,yup)).blue() * (x - xd)) *(y - yd);
+                        green = (QColor(image->pixel(xd,yd)).green() * (xup - x) + QColor(image->pixel(xup,yd)).green() * (x - xd)) *(yup - y) +
+                                (QColor(image->pixel(xd,yup)).green() * (xup - x) + QColor(image->pixel(xup,yup)).green() * (x - xd)) *(y - yd);
+                       a.setPixelColor(i,j,QColor(red,blue,green));
+                    }
+                }
+             }
             }
-        }
-        QPixmap map = QPixmap::fromImage(*image1);
+
+        QPixmap map = QPixmap::fromImage(a);
         sWidget->scene->addPixmap(map);
 }
 
@@ -206,6 +215,8 @@ void MainWindow::paintEvent(QPaintEvent *)
     if(oFile != NULL)
     {
         QPixmap map = QPixmap::fromImage(*image);
+        map.scaled(fWidget->height(),fWidget->width());
+        *image = map.toImage();
         fWidget->scene->addPixmap(map);
     }
     if(fWidget->A!=NULL && fWidget->B!=NULL && fWidget->C!= NULL &&
