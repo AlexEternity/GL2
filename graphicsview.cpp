@@ -12,7 +12,7 @@ GraphicsView::~GraphicsView()
 {
 
 }
-
+//лялялылвылвы
 void GraphicsView::mousePressEvent(QMouseEvent *event)
 {
     if( A == NULL)
